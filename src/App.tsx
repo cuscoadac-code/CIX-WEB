@@ -803,19 +803,24 @@ const Chatbot = ({ user }: { user: FirebaseUser | null }) => {
   }, [messages]);
 
   const sendMessage = async () => {
-    if (!input.trim() || !user) return;
+    if (!input.trim()) return;
     
     const userMsg = input;
     setInput('');
     setIsLoading(true);
 
     try {
-      // Save user message to Supabase
-      await supabase.from('chats').insert({
-        user_id: user.id,
-        role: 'user',
-        text: userMsg
-      });
+      // Save user message to Supabase (ONLY IF LOGGED IN)
+      if (user) {
+        await supabase.from('chats').insert({
+          user_id: user.id,
+          role: 'user',
+          text: userMsg
+        });
+      } else {
+        // If guest, update local state directly so the message appears
+        setMessages(prev => [...prev, { role: 'user', text: userMsg, created_at: new Date().toISOString() }]);
+      }
 
       const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY });
       const chat = ai.chats.create({
@@ -830,15 +835,20 @@ const Chatbot = ({ user }: { user: FirebaseUser | null }) => {
       });
 
       const response = await chat.sendMessage({ message: userMsg });
-      console.log("Gemini Response Success:", response);
+      console.log("Gemini Response Success (Guest Mode):", response);
       const aiResponse = response.text;
 
-      // Save AI response to Supabase
-      await supabase.from('chats').insert({
-        user_id: user.id,
-        role: 'model',
-        text: aiResponse
-      });
+      // Save AI response to Supabase (ONLY IF LOGGED IN)
+      if (user) {
+        await supabase.from('chats').insert({
+          user_id: user.id,
+          role: 'model',
+          text: aiResponse
+        });
+      } else {
+        // If guest, update local state directly
+        setMessages(prev => [...prev, { role: 'model', text: aiResponse, created_at: new Date().toISOString() }]);
+      }
 
     } catch (error) {
       console.error("Chat error:", error);
