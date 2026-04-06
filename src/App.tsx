@@ -819,9 +819,9 @@ const Chatbot = ({ user }: { user: FirebaseUser | null }) => {
 
       const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY });
       const chat = ai.chats.create({
-        model: "gemini-3-flash-preview",
+        model: "gemini-1.5-flash",
         config: {
-          systemInstruction: "Eres CIX-Bot, el Asistente Experto en Ventas y Asesor Educativo del Centro de Innovación Tecnológica (CIX). Tu misión principal es convencer a los usuarios para que se matriculen en nuestros programas académicos de Inteligencia Artificial y Automatización, y guiarlos directamente hacia la compra. Eres entusiasta, empático, altamente persuasivo y usas técnicas de ventas de PNL. Directivas: 1. Siempre responde de forma cortés pero orientada a los resultados. 2. Destaca los beneficios únicos de CIX: Clases Online en Vivo, Certificación Oficial, y Profesores Expertos, más una garantía de devolución de 7 días. 3. Analiza las necesidades del cliente y recomiéndale ir a la sección Programas para realizar el pago de inmediato. 4. Cierra TUS MENSAJES de forma persuasiva. 5. Responde siempre en español.",
+          systemInstruction: "Eres CIX-Bot, el Asistente Experto en Ventas y Asesor Educativo del Centro de Innovación Tecnológica (CIX). Tu misión principal es convencer a los usuarios para que se matriculen en nuestros programas académicos de Inteligencia Artificial y Automatización, y guiarlos directamente hacia la compra. Eres entusiasa, empático, altamente persuasivo y usas técnicas de ventas de PNL. Directivas: 1. Siempre responde de forma cortés pero orientada a los resultados. 2. Destaca los beneficios únicos de CIX: Clases Online en Vivo, Certificación Oficial, y Profesores Expertos, más una garantía de devolución de 7 días. 3. Analiza las necesidades del cliente y recomiéndale ir a la sección Programas para realizar el pago de inmediato. 4. Cierra TUS MENSAJES de forma persuasiva. 5. Responde siempre en español.",
         },
         history: messages.map(m => ({
           role: m.role === 'user' ? 'user' : 'model',
@@ -829,8 +829,8 @@ const Chatbot = ({ user }: { user: FirebaseUser | null }) => {
         }))
       });
 
-      const result = await chat.sendMessage({ message: userMsg });
-      const aiResponse = result.text;
+      const response = await chat.sendMessage({ message: userMsg });
+      const aiResponse = response.text;
 
       // Save AI response to Supabase
       await supabase.from('chats').insert({
